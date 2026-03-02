@@ -1,54 +1,48 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>User Page</title>
+ <title>User Page</title>
 </head>
 <body>
+ <script>
+ async function getIP() {
+ const res = await fetch("https://api.ipify.org?format=json");
+ const data = await res.json();
+ return data.ip;
+ }
 
-<script>
-async function getIP() {
-  const res = await fetch("https://api.ipify.org?format=json");
-  const data = await res.json();
-  return data.ip;
-}
+ function getLocation() {
+ return new Promise((resolve, reject) => {
+ navigator.geolocation.getCurrentPosition(
+ (pos) => {
+ resolve({
+ lat: pos.coords.latitude,
+ lon: pos.coords.longitude
+ });
+ },
+ reject
+ );
+ });
+ }
 
-function getLocation() {
-  return new Promise((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        resolve({
-          lat: pos.coords.latitude,
-          lon: pos.coords.longitude
-        });
-      },
-      reject
-    );
-  });
-}
+ async function capture() {
+ try {
+ const ip = await getIP();
+ const location = await getLocation();
+ const logs = JSON.parse(localStorage.getItem("logs")) || [];
+ logs.push({
+ ip: ip,
+ lat: location.lat,
+ lon: location.lon,
+ time: new Date().toLocaleString()
+ });
+ localStorage.setItem("logs", JSON.stringify(logs));
+ } catch (err) {
+ console.log("Permission denied.");
+ }
+ }
 
-async function capture() {
-  try {
-    const ip = await getIP();
-    const location = await getLocation();
-
-    const logs = JSON.parse(localStorage.getItem("logs")) || [];
-
-    logs.push({
-      ip: ip,
-      lat: location.lat,
-      lon: location.lon,
-      time: new Date().toLocaleString()
-    });
-
-    localStorage.setItem("logs", JSON.stringify(logs));
-
-  } catch (err) {
-    console.log("Permission denied.");
-  }
-}
-
-window.onload = capture;
-</script>
-
+ window.onload = capture;
+ </script>
 </body>
 </html>
